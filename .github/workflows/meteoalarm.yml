@@ -1,0 +1,39 @@
+name: Meteoalarm daily email
+
+on:
+  schedule:
+    # 06:00 e 07:00 UTC per coprire CEST/CET -> script invia solo alle 08:00 Europe/Rome
+    - cron: "0 6 * * *"
+    - cron: "0 7 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Run screenshot & email
+        env:
+          TARGET_URL: "https://meteoalarm.org/en/live/?t=day0&h=3,10,12,13#list"
+          LOCAL_TZ: "Europe/Rome"
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          MAIL_TO:   ${{ secrets.MAIL_TO }}
+          SCREENSHOT_PATH: "meteoalarm.png"
+        run: python screenshot_and_mail.py
