@@ -2,10 +2,14 @@ name: Meteoalarm daily email
 
 on:
   schedule:
-    # 06:00 e 07:00 UTC per coprire CEST/CET -> script invia solo alle 08:00 Europe/Rome
-    - cron: "0 6 * * *"
-    - cron: "0 7 * * *"
-  workflow_dispatch: {}
+    - cron: "0 6 * * *"   # copre le 08:00 durante l'ora legale
+    - cron: "0 7 * * *"   # copre le 08:00 durante l'ora solare
+  workflow_dispatch:
+    inputs:
+      force_send:
+        description: "Forza l'invio indipendentemente dall'ora locale"
+        required: false
+        default: "false"
 
 jobs:
   run:
@@ -25,6 +29,17 @@ jobs:
           pip install -r requirements.txt
           python -m playwright install --with-deps chromium
 
+      - name: Log timezones
+        run: |
+          echo "System tz (should be UTC):"
+          date -u
+          echo "Europe/Rome now via Python:"
+          python - <<'PY'
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
+          print("Local Rome:", datetime.now(ZoneInfo("Europe/Rome")))
+          PY
+
       - name: Run screenshot & email
         env:
           TARGET_URL: "https://meteoalarm.org/en/live/?t=day0&h=3,10,12,13#list"
@@ -36,4 +51,16 @@ jobs:
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
           MAIL_TO:   ${{ secrets.MAIL_TO }}
           SCREENSHOT_PATH: "meteoalarm.png"
+          FORCE_SEND: ${{ github.event_name == 'workflow_dispatch' && inputs.force_send == 'true' && '1' || '0' }}
+          SAVE_EML: "1"
         run: python screenshot_and_mail.py
+
+      - name: Upload artifacts (screenshot & eml)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: meteoalarm-artifacts
+          path: |
+            meteoalarm.png
+            debug.eml
+          if-no-files-found: warn
