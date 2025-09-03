@@ -2,12 +2,13 @@ name: Meteoalarm daily email
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # copre le 08:00 durante l'ora legale
-    - cron: "0 7 * * *"   # copre le 08:00 durante l'ora solare
+    # 06:00 e 07:00 UTC per coprire le 08:00 Europe/Rome (CEST vs CET)
+    - cron: "0 6 * * *"
+    - cron: "0 7 * * *"
   workflow_dispatch:
     inputs:
       force_send:
-        description: "Forza l'invio indipendentemente dall'ora locale"
+        description: "Forza l'invio indipendentemente dall'orario locale"
         required: false
         default: "false"
 
@@ -31,7 +32,7 @@ jobs:
 
       - name: Log timezones
         run: |
-          echo "System tz (should be UTC):"
+          echo "System UTC time:"
           date -u
           echo "Europe/Rome now via Python:"
           python - <<'PY'
@@ -44,15 +45,23 @@ jobs:
         env:
           TARGET_URL: "https://meteoalarm.org/en/live/?t=day0&h=3,10,12,13#list"
           LOCAL_TZ: "Europe/Rome"
+
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           MAIL_FROM: ${{ secrets.MAIL_FROM }}
           MAIL_TO:   ${{ secrets.MAIL_TO }}
+
           SCREENSHOT_PATH: "meteoalarm.png"
+
+          # Flag di controllo
           FORCE_SEND: ${{ github.event_name == 'workflow_dispatch' && inputs.force_send == 'true' && '1' || '0' }}
           SAVE_EML: "1"
+
+          # Debug / sicurezza
+          SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
+          SMTP_DEBUG: "0"
         run: python screenshot_and_mail.py
 
       - name: Upload artifacts (screenshot & eml)
