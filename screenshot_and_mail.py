@@ -70,7 +70,7 @@ def build_email(path: str) -> EmailMessage:
     subject = f"Meteoalarm – screenshot {now_local.strftime('%Y-%m-%d')}"
     body = (
         f"Ciao,\n"
-        f"in allegato lo screenshot Meteoalarm di oggi "
+        f"in allegato lo screenshot Meteoalarm (https://meteoalarm.org/) di oggi "
         f"({now_local.strftime('%Y-%m-%d %H:%M')} {TZ}).\n"
     )
 
