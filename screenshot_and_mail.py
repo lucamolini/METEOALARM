@@ -175,7 +175,7 @@ async def take_screenshot() -> None:
             log(f"Cookie banner: nessuna azione ({e})")
 
         # Attendi un minimo per rendering dinamico
-        await page.wait_for_timeout(3000)
+        await page.wait_for_timeout(6000)
 
         await page.screenshot(path=OUT, full_page=True)
         await browser.close()
