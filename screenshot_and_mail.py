@@ -188,9 +188,9 @@ def main() -> None:
     log(f"Ora locale {TZ}: {now_local.strftime('%Y-%m-%d %H:%M:%S')} | UTC offset ~ {now_local.utcoffset()}")
 
     # Gate sull'orario locale
-    if not FORCE_SEND and now_local.hour != 8:
-        log("Skip: non sono le 08 locali (usa FORCE_SEND=1 per test).")
-        return
+    # if not FORCE_SEND and now_local.hour != 8:
+    #    log("Skip: non sono le 08 locali (usa FORCE_SEND=1 per test).")
+    #    return
 
     # Controllo variabili SMTP
     required_vals = [SMTP_HOST, SMTP_USER, SMTP_PASS, MAIL_TO]
