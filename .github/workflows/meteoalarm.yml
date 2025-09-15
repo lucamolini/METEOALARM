@@ -4,7 +4,7 @@ on:
   schedule:
     # 06:00 e 07:00 UTC per coprire le 08:00 Europe/Rome (CEST vs CET)
     # - cron: "0 8 * * *"
-    - cron: "0 9 * * *"
+    - cron: "0 7 * * *"
   workflow_dispatch:
     inputs:
       force_send:
